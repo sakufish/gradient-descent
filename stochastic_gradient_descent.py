@@ -15,7 +15,6 @@ for i in range(len(data)):
     for j in range(len(data[0])):
         data[i][j] /= sf[j]
 
-
 # hypothesis
 theta = [0] * (FEATURES)
 def h(x: list[int]) -> float:
@@ -32,37 +31,20 @@ def j() -> float:
         l += (h(data[i][1:]) - data[i][0]) ** 2
     return l/len(data)
 
-# gradient constant loss function 
-def jgc() -> float:
-    l = 0
+# stochastic gradient descent
+def stochastic(theta : list[int], alpha : float) -> float:
     for i in range(len(data)):
-        l += h(data[i][1:]) - data[i][0]
-    return l
-
-# gradient term loss function
-def jgt(feat : int) -> float:
-    l = 0
-    for i in range(len(data)):
-        l += (h(data[i][1:]) - data[i][0]) * data[i][feat]
-    return l
-
-# gradient descent - updates thetas and returns average cost
-def gradient_descent(alpha : float) -> float:
-    global theta
-    n_theta = theta
-    n_theta[-1] = theta[-1] - alpha * jgc() / len(data)
-
-    for i in range(1, FEATURES):
-        n_theta[i-1] = theta[i-1] - alpha * jgt(i) / len(data)
-    
-    theta = n_theta
+        e = h(data[i][1:]) - data[i][0]
+        theta[-1] = theta[-1] - alpha * e
+        for p in range(1, FEATURES):
+            theta[p-1] = theta[p-1] - alpha * e * data[i][p]
     return j()
 
-prev_cost = float('inf')
 tolerance = 0.0000001
+prev_cost = float('inf')
 
 while True:
-    c = gradient_descent(0.01)
+    c = stochastic(theta, 0.01)
     if (abs(c-prev_cost) < tolerance):
         break
     prev_cost = c
