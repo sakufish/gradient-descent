@@ -1,54 +1,65 @@
 import csv
 
 data = []
-m1, m2 = 0, 0
+FEATURES = 5
+sf = [0] * FEATURES
 with open("house-prices.csv", mode="r") as file:
     reader = csv.reader(file)
     for row in reader:
-        data.append([int(row[2]),int(row[1])])
-        m1 = max(m1, int(row[1]))
-        m2 = max(m2, int(row[2]))
+        data.append([int(row[1]),int(row[2]),int(row[3]),int(row[4]),int(row[5])])
+        for i in range(len(sf)):
+            sf[i] = max(sf[i], int(row[i+1])) 
 
 # scaling
 for i in range(len(data)):
-    data[i][0] /= m2
-    data[i][1] /= m1
+    for j in range(len(data[0])):
+        data[i][j] /= sf[j]
+
 
 # hypothesis
-theta = [0,0]
-def h(x: float) -> float:
-    return theta[0] + x * theta[1]
+theta = [0] * (FEATURES)
+def h(x: list[int]) -> float:
+    s = 0
+    for i in range(FEATURES - 1):
+        s += x[i] * theta[i]
+    s += theta[-1]
+    return s
 
 # total loss function
 def j() -> float:
     l = 0
     for i in range(len(data)):
-        l += (h(data[i][0]) - data[i][1]) ** 2
+        l += (h(data[i][1:]) - data[i][0]) ** 2
     return l/len(data)
 
 # gradient constant loss function 
 def jgc() -> float:
     l = 0
     for i in range(len(data)):
-        l += h(data[i][0]) - data[i][1]
+        l += h(data[i][1:]) - data[i][0]
     return l
 
 # gradient term loss function
-def jgt() -> float:
+def jgt(feat : int) -> float:
     l = 0
     for i in range(len(data)):
-        l += (h(data[i][0]) - data[i][1]) * data[i][0]
+        l += (h(data[i][1:]) - data[i][0]) * data[i][feat]
     return l
 
 # gradient descent - updates thetas and returns average cost
-def gradient_descent(theta, alpha) -> float:
-    theta[0] = theta[0] - alpha * jgc() / len(data)
-    theta[1] = theta[1] - alpha * jgt() / len(data)
-    return j()
+def gradient_descent(theta : list[int], alpha : int) -> float:
 
+    for i in range(1, FEATURES):
+        theta[i] = theta[i] - alpha * jgt(i) / len(data)
+    theta[-1] = theta[-1] - alpha * jgc() / len(data)
+
+    print(j())
+    return j()
 
 prev_cost = float('inf')
 tolerance = 0.00000001
+
+print(data)
 
 while True:
     c = gradient_descent(theta, 0.01)
@@ -56,4 +67,10 @@ while True:
         break
     prev_cost = c
 
-print("Predicted Price for 2000 SqFt: " + str(h(2000/m2)*m1))
+f = [2000, 3, 1, 5] # SqFt, Bedrooms, Bathrooms, Offers
+
+# scale features
+for i in range(len(f)):
+    f[i] /= sf[i+1]
+
+print(f"Predicted Price: ${(h(f)*sf[0]):.2f}")
