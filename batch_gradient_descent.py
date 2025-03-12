@@ -10,7 +10,7 @@ with open("house-prices.csv", mode="r") as file:
         for i in range(len(sf)):
             sf[i] = max(sf[i], int(row[i+1])) 
 
-# scaling
+# scaling   
 for i in range(len(data)):
     for j in range(len(data[0])):
         data[i][j] /= sf[j]
