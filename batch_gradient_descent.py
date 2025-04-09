@@ -56,6 +56,7 @@ def gradient_descent(alpha : float) -> float:
         n_theta[i-1] = theta[i-1] - alpha * jgt(i) / len(data)
     
     theta = n_theta
+    print(j())
     return j()
 
 prev_cost = float('inf')
